@@ -45,6 +45,7 @@ nav_df = pd.read_csv(
 # ==========================================================
 
 print("\n" + "=" * 60)
+
 print("NAV History Dataset")
 print("=" * 60)
 
@@ -129,6 +130,17 @@ nav_df["nav"] = pd.to_numeric(nav_df["nav"])
 print("✓ Date column converted to datetime.")
 print("✓ NAV column converted to numeric.")
 print("✓ Dataset cleaned successfully.")
+
+# Forward fill missing NAV values if any exist
+if nav_df["nav"].isnull().sum() > 0:
+
+    nav_df["nav"] = nav_df["nav"].ffill()
+
+    print("✓ Missing NAV values filled using forward-fill.")
+
+else:
+
+    print("✓ No missing NAV values found.")
 
 # ==========================================================
 # Data Cleaning Summary
