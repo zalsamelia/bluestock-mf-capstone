@@ -89,6 +89,19 @@ The project uses ten datasets related to the Indian mutual fund industry.
 | Benchmark Indices | Market benchmark data |
 
 ---
+## Database Design Notes
+
+The SQLite database follows a simplified star schema consisting of:
+
+- `dim_fund`
+- `dim_date`
+- `fact_nav`
+- `fact_transactions`
+- `fact_performance`
+
+The `aum_crore` attribute is stored directly in the `fact_performance` table rather than creating a separate `fact_aum` table.
+
+This design was chosen because the provided dataset contains a single AUM value for each mutual fund performance record, making a separate fact table unnecessary while keeping the database structure simpler and avoiding redundant data.
 
 # Project Progress
 
