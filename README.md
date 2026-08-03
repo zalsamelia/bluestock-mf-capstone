@@ -1,36 +1,49 @@
-# bluestock-mf-capstone
-Mutual Fund Analytics Platform - Bluestock Fintech Capstone Project
-# Bluestock Mutual Fund Capstone
+# Mutual Fund Analytics Platform
+### Bluestock Fintech Data Analyst Capstone Project
 
-## Project Overview
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![Power BI](https://img.shields.io/badge/PowerBI-Dashboard-F2C811)
+![SQLite](https://img.shields.io/badge/SQLite-Database-003B57)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 
-This project was completed as part of the Bluestock Fintech Data Analyst Internship Capstone.
+---
 
-The objective of this project is to build a complete data analytics workflow, starting from raw data preparation, data cleaning, database creation, SQL analysis, exploratory data analysis (EDA), and business reporting. The project uses mutual fund datasets to analyze fund performance, investor behavior, and industry trends.
+# Project Overview
+
+This project was completed as part of the **Bluestock Fintech Data Analyst Internship Capstone Program**.
+
+The objective of this project is to build a complete end-to-end data analytics workflow using mutual fund industry data. The workflow covers data cleaning, database creation, SQL analysis, exploratory data analysis (EDA), business insight generation, and interactive dashboard development using Power BI.
+
+The final outcome is an interactive dashboard that provides insights into mutual fund performance, investor behavior, fund allocation, Assets Under Management (AUM), SIP trends, and investment distribution across India.
 
 ---
 
 # Project Objectives
 
-- Clean and prepare raw datasets for analysis.
-- Build a structured SQLite database.
-- Perform SQL-based business analysis.
-- Conduct Exploratory Data Analysis (EDA).
-- Generate business insights.
-- Prepare data for dashboard development in Power BI.
+- Clean and prepare raw mutual fund datasets
+- Perform data quality assessment
+- Build a structured SQLite database
+- Execute SQL-based business analysis
+- Conduct Exploratory Data Analysis (EDA)
+- Generate business insights
+- Develop an interactive Power BI dashboard
+- Present data-driven recommendations
 
 ---
 
-# Technologies Used
+# Tech Stack
 
 - Python
 - Pandas
 - NumPy
 - Matplotlib
+- Plotly
 - SQLite
 - SQL
 - Jupyter Notebook
-- Git & GitHub
+- Power BI
+- Git
+- GitHub
 
 ---
 
@@ -40,144 +53,165 @@ The objective of this project is to build a complete data analytics workflow, st
 bluestock-mf-capstone/
 │
 ├── analysis/
-│   ├── eda.ipynb
+│   ├── EDA.ipynb
 │   └── figures/
+│
+├── dashboard/
+│   ├── Mutual_Fund_Dashboard.pbix
+│   └── dashboard_preview.png
 │
 ├── data/
 │   ├── raw/
 │   └── processed/
 │
+├── docs/
+│   └── dashboard.pdf
+│
 ├── reports/
+│   ├── business_insights.md
 │   ├── data_cleaning_plan.md
 │   ├── data_cleaning_report.md
 │   ├── data_dictionary.md
 │   ├── data_quality_summary.md
-│   ├── eda_report.md
-│   └── business_insights.md
+│   └── eda_report.md
 │
 ├── scripts/
-│   ├── cleaning/
-│   ├── load_to_db.py
-│   └── run_query.py
 │
 ├── sql/
-│   ├── schema.sql
-│   └── queries.sql
 │
 ├── .gitignore
+├── requirements.txt
 ├── README.md
-└── requirements.txt
+└── bluestock_mf.db
 ```
 
 ---
 
 # Datasets
 
-The project uses ten datasets related to the Indian mutual fund industry.
+The project uses ten datasets representing different aspects of the Indian Mutual Fund industry.
 
 | Dataset | Description |
 |----------|-------------|
 | Fund Master | Mutual fund master information |
-| NAV History | Historical Net Asset Value (NAV) |
-| Scheme Performance | Performance indicators |
+| NAV History | Historical NAV prices |
+| Scheme Performance | Fund performance metrics |
 | Investor Transactions | Investor transaction records |
-| AUM | Assets Under Management |
-| SIP | Monthly SIP inflows |
-| Category Inflows | Net inflows by category |
-| Industry Folios | Industry folio statistics |
+| Assets Under Management | AUM statistics |
+| Monthly SIP Inflows | SIP investment trends |
+| Category Inflows | Net inflow by category |
+| Industry Folios | Investor folio statistics |
 | Portfolio Holdings | Mutual fund holdings |
-| Benchmark Indices | Market benchmark data |
-
----
-## Database Design Notes
-
-The SQLite database follows a simplified star schema consisting of:
-
-- `dim_fund`
-- `dim_date`
-- `fact_nav`
-- `fact_transactions`
-- `fact_performance`
-
-The `aum_crore` attribute is stored directly in the `fact_performance` table rather than creating a separate `fact_aum` table.
-
-This design was chosen because the provided dataset contains a single AUM value for each mutual fund performance record, making a separate fact table unnecessary while keeping the database structure simpler and avoiding redundant data.
-
-# Project Progress
-
-## Day 1 – Data Cleaning
-
-Completed:
-
-- Data inspection
-- Missing value checking
-- Duplicate checking
-- Data type validation
-- Data standardization
-- Clean dataset generation
-
-Output:
-
-- 10 cleaned CSV files
-- Data Cleaning Report
-- Data Quality Summary
-- Data Cleaning Plan
+| Benchmark Indices | Benchmark performance |
 
 ---
 
-## Day 2 – Database & SQL
+# Database Design
 
-Completed:
+The project uses SQLite as the analytical database.
 
-- SQLite database creation
-- Star schema implementation
-- SQL table creation
-- Data loading
-- SQL analytical queries
-- Interactive SQL Query Runner
-- Data Dictionary documentation
+The database follows a simplified star schema consisting of:
 
-Output:
+- Dimension Tables
+  - Fund
+  - Date
 
-- SQLite database
-- SQL schema
-- SQL queries
-- Interactive query runner
-- Data Dictionary
+- Fact Tables
+  - Performance
+  - Transactions
+  - NAV
+
+A separate AUM fact table was not created because each performance record already contains the corresponding AUM value, reducing redundancy while maintaining a clean analytical structure.
 
 ---
 
-## Day 3 – Exploratory Data Analysis
+# Exploratory Data Analysis
 
-Completed:
+EDA was conducted to understand the characteristics of the mutual fund market and identify investment trends.
 
-- Dataset inspection
-- Descriptive statistics
+The analysis includes:
+
 - Data quality assessment
-- Exploratory Data Analysis
-- Business visualizations
-- EDA Report
-- Business Insights
-
-Visualizations include:
-
-- Fund category distribution
-- Top fund houses
-- Risk category distribution
-- Launch year trend
-- Expense ratio distribution
-- NAV distribution
-- Average NAV analysis
-- Fund performance analysis
+- Missing value analysis
+- Distribution analysis
+- Fund category analysis
+- Performance analysis
+- Risk analysis
+- Expense ratio analysis
+- NAV analysis
 - Investor transaction analysis
 - Industry trend analysis
 
-Output:
+---
 
+# Dashboard Features
+
+The interactive Power BI dashboard contains:
+
+- KPI Cards
+  - Total Assets Under Management
+  - Total Mutual Fund Schemes
+  - Registered Investors
+  - Average 3-Year Return
+
+- Top Fund Houses by AUM
+
+- Average 3-Year Return by Category
+
+- Monthly SIP Trend
+
+- Fund Allocation
+
+- Top States by Investment
+
+- Investor Demographics
+
+---
+
+# Dashboard Preview
+
+> Replace the image below with your dashboard screenshot.
+
+```text
+dashboard/dashboard_preview.png
+```
+
+or
+
+```md
+![Dashboard Preview](dashboard/dashboard_preview.png)
+```
+
+---
+
+# Key Business Insights
+
+The analysis reveals several important findings:
+
+- SBI Mutual Fund manages the largest Assets Under Management (AUM) among all fund houses.
+- SIP inflows show a steady upward trend, indicating increasing retail investor participation.
+- Small Cap funds deliver the highest average 3-year returns compared to other categories.
+- Equity funds account for the majority of overall fund allocation.
+- Punjab records the highest investment volume among the analyzed states.
+- Investors aged 26–35 represent the largest investor segment.
+- Fund performance varies significantly across investment categories, emphasizing the importance of portfolio diversification.
+
+---
+
+# Project Outputs
+
+The project successfully delivers:
+
+- Cleaned datasets
+- SQLite analytical database
+- SQL analytical queries
+- Data Dictionary
+- Data Cleaning Report
+- Data Quality Summary
 - EDA Notebook
-- Visualization figures
-- EDA Report
-- Business Insights
+- Business Insights Report
+- Power BI Dashboard
+- Dashboard PDF
 
 ---
 
@@ -186,7 +220,7 @@ Output:
 ## 1. Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/<your-username>/bluestock-mf-capstone.git
 ```
 
 ---
@@ -205,11 +239,11 @@ pip install -r requirements.txt
 python scripts/cleaning/clean_01_fund_master.py
 ```
 
-Repeat for the remaining cleaning scripts.
+Repeat for the remaining cleaning scripts if needed.
 
 ---
 
-## 4. Create Database
+## 4. Create SQLite Database
 
 ```bash
 python scripts/load_to_db.py
@@ -217,7 +251,7 @@ python scripts/load_to_db.py
 
 ---
 
-## 5. Run SQL Queries
+## 5. Execute SQL Analysis
 
 ```bash
 python scripts/run_query.py
@@ -225,33 +259,37 @@ python scripts/run_query.py
 
 ---
 
-## 6. Open EDA Notebook
+## 6. Run Exploratory Data Analysis
+
+Open:
 
 ```text
-analysis/eda.ipynb
+analysis/EDA.ipynb
 ```
 
-Run all notebook cells to reproduce the exploratory analysis and generate visualization figures.
+Run all notebook cells to reproduce the analysis and figures.
 
 ---
 
-# Project Outputs
+## 7. Open Power BI Dashboard
 
-- Clean datasets
-- SQLite database
-- SQL analytical queries
-- Interactive SQL query runner
-- EDA notebook
-- Visualization figures
-- Data Dictionary
-- EDA Report
-- Business Insights
+Open the following file using Power BI Desktop:
+
+```text
+dashboard/Mutual_Fund_Dashboard.pbix
+```
 
 ---
 
-# Future Work
+# Future Improvements
 
-The next stage of this project is to build an interactive Power BI dashboard using the cleaned datasets and analytical outputs generated during this capstone.
+Possible future enhancements include:
+
+- Predictive analytics for mutual fund performance
+- Machine learning-based fund recommendation
+- Automated ETL pipeline
+- Real-time dashboard integration
+- Deployment using Power BI Service
 
 ---
 
@@ -259,4 +297,12 @@ The next stage of this project is to build an interactive Power BI dashboard usi
 
 **Zalsabilah Rezky Amelia Arep**
 
-Data Analyst Intern – Bluestock Fintech Capstone
+Data Analyst Intern
+
+Bluestock Fintech Capstone Project
+
+---
+
+# Acknowledgements
+
+This project was developed as part of the **Bluestock Fintech Data Analyst Internship Capstone Program**, integrating data engineering, SQL analytics, exploratory data analysis, and business intelligence into a complete end-to-end analytics solution.
