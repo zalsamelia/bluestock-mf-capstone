@@ -252,8 +252,6 @@ The interactive Power BI dashboard includes:
 
 # Dashboard Preview
 
-# Dashboard Preview
-
 Below is the final interactive dashboard developed for this project.
 
 ![Dashboard Preview](dashboard/dashboard_preview.png)
