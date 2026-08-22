@@ -1,11 +1,34 @@
-# ==========================================================
-# Day 2 - Data Cleaning
-# Dataset : 07_scheme_performance.csv
-# ==========================================================
+"""
+==========================================================
+Bluestock Mutual Fund Capstone
+Day 2 - Data Cleaning
+
+Dataset:
+07_scheme_performance.csv
+
+Purpose:
+This script performs data profiling, quality assessment,
+cleaning, validation, and export processes for the
+Scheme Performance dataset.
+
+Main Tasks:
+1. Load raw dataset
+2. Inspect dataset structure
+3. Perform data quality assessment
+4. Standardize text columns
+5. Validate performance-related metrics
+6. Export cleaned dataset
+
+Output:
+clean_scheme_performance.csv
+
+==========================================================
+"""
 
 # ==========================================================
 # Import Libraries
 # ==========================================================
+
 import pandas as pd
 from pathlib import Path
 
@@ -13,13 +36,10 @@ from pathlib import Path
 # Project Paths
 # ==========================================================
 
-# Project Root Directory
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
-# Raw Dataset Folder
 RAW_DATA_PATH = PROJECT_ROOT / "data" / "raw"
 
-# Processed Dataset Folder
 PROCESSED_DATA_PATH = PROJECT_ROOT / "data" / "processed"
 
 # ==========================================================
@@ -28,152 +48,250 @@ PROCESSED_DATA_PATH = PROJECT_ROOT / "data" / "processed"
 
 PERFORMANCE_FILE = RAW_DATA_PATH / "07_scheme_performance.csv"
 
-# ==========================================================
-# Load Dataset
-# ==========================================================
 
-performance_df = pd.read_csv(
-    PERFORMANCE_FILE,
-    dtype={
-        "scheme_name": "str",
-        "fund_house": "str",
-        "category": "str",
-        "plan": "str",
-        "risk_grade": "str"
-    }
-)
+def load_dataset():
+    """
+    Load the Scheme Performance dataset.
 
-# ==========================================================
-# Dataset Inspection
-# ==========================================================
+    Returns
+    -------
+    pandas.DataFrame
+        Raw scheme performance dataset.
+    """
 
-print("\n" + "=" * 60)
-print("Scheme Performance Dataset")
-print("=" * 60)
+    return pd.read_csv(
+        PERFORMANCE_FILE,
+        dtype={
+            "scheme_name": "str",
+            "fund_house": "str",
+            "category": "str",
+            "plan": "str",
+            "risk_grade": "str"
+        }
+    )
 
-print(f"Rows    : {performance_df.shape[0]}")
-print(f"Columns : {performance_df.shape[1]}")
 
-print("\nColumn Names")
+def inspect_dataset(df):
+    """
+    Display dataset structure, metadata,
+    and descriptive statistics.
 
-for column in performance_df.columns:
-    print(f"- {column}")
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Dataset to inspect.
+    """
 
-print("\nData Types")
-print(performance_df.dtypes)
+    print("\n" + "=" * 60)
+    print("Scheme Performance Dataset")
+    print("=" * 60)
 
-print("\nFirst Five Rows")
-print(performance_df.head())
+    print(f"Rows    : {df.shape[0]}")
+    print(f"Columns : {df.shape[1]}")
 
-print("\nDataset Information")
-performance_df.info()
+    print("\nColumn Names")
 
-print("\nStatistical Summary")
-print(performance_df.describe(include="all"))
+    for column in df.columns:
+        print(f"- {column}")
 
-# ==========================================================
-# Data Quality Assessment
-# ==========================================================
+    print("\nData Types")
+    print(df.dtypes)
 
-print("\n" + "=" * 60)
-print("Missing Values")
-print("=" * 60)
+    print("\nFirst Five Rows")
+    print(df.head())
 
-print(performance_df.isnull().sum())
+    print("\nDataset Information")
+    df.info()
 
-print("\n" + "=" * 60)
-print("Duplicate Records")
-print("=" * 60)
+    print("\nStatistical Summary")
+    print(df.describe(include="all"))
 
-print(f"Duplicate Rows : {performance_df.duplicated().sum()}")
 
-print("\n" + "=" * 60)
-print("Unique Fund Houses")
-print("=" * 60)
+def assess_data_quality(df):
+    """
+    Perform data quality checks.
 
-print(performance_df["fund_house"].value_counts())
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Dataset to evaluate.
+    """
 
-print("\n" + "=" * 60)
-print("Categories")
-print("=" * 60)
+    print("\n" + "=" * 60)
+    print("Missing Values")
+    print("=" * 60)
 
-print(performance_df["category"].value_counts())
+    print(df.isnull().sum())
 
-print("\n" + "=" * 60)
-print("Investment Plans")
-print("=" * 60)
+    print("\n" + "=" * 60)
+    print("Duplicate Records")
+    print("=" * 60)
 
-print(performance_df["plan"].value_counts())
+    print(f"Duplicate Rows : {df.duplicated().sum()}")
 
-print("\n" + "=" * 60)
-print("Risk Grades")
-print("=" * 60)
+    print("\n" + "=" * 60)
+    print("Unique Fund Houses")
+    print("=" * 60)
 
-print(performance_df["risk_grade"].value_counts())
+    print(df["fund_house"].value_counts())
 
-print("\n" + "=" * 60)
-print("Morningstar Ratings")
-print("=" * 60)
+    print("\n" + "=" * 60)
+    print("Categories")
+    print("=" * 60)
 
-print(performance_df["morningstar_rating"].value_counts())
+    print(df["category"].value_counts())
 
-print("\n" + "=" * 60)
-print("Return Validation")
-print("=" * 60)
+    print("\n" + "=" * 60)
+    print("Investment Plans")
+    print("=" * 60)
 
-print(f"Minimum 1-Year Return : {performance_df['return_1yr_pct'].min()}")
-print(f"Maximum 1-Year Return : {performance_df['return_1yr_pct'].max()}")
+    print(df["plan"].value_counts())
 
-print(f"Minimum Expense Ratio : {performance_df['expense_ratio_pct'].min()}")
-print(f"Maximum Expense Ratio : {performance_df['expense_ratio_pct'].max()}")
+    print("\n" + "=" * 60)
+    print("Risk Grades")
+    print("=" * 60)
 
-# ==========================================================
-# Data Cleaning
-# ==========================================================
+    print(df["risk_grade"].value_counts())
 
-print("\n" + "=" * 60)
-print("Data Cleaning Process")
-print("=" * 60)
+    print("\n" + "=" * 60)
+    print("Morningstar Ratings")
+    print("=" * 60)
 
-# Remove leading and trailing spaces
-string_columns = [
-    "scheme_name",
-    "fund_house",
-    "category",
-    "plan",
-    "risk_grade"
-]
+    print(df["morningstar_rating"].value_counts())
 
-for column in string_columns:
-    performance_df[column] = performance_df[column].str.strip()
+    print("\n" + "=" * 60)
+    print("Return Validation")
+    print("=" * 60)
 
-print("✓ Text columns standardized.")
-print("✓ Dataset cleaned successfully.")
+    print(
+        f"Minimum 1-Year Return : "
+        f"{df['return_1yr_pct'].min()}"
+    )
 
-# ==========================================================
-# Data Cleaning Summary
-# ==========================================================
+    print(
+        f"Maximum 1-Year Return : "
+        f"{df['return_1yr_pct'].max()}"
+    )
 
-print("\n" + "=" * 60)
-print("Data Cleaning Summary")
-print("=" * 60)
+    print(
+        f"Minimum Expense Ratio : "
+        f"{df['expense_ratio_pct'].min()}"
+    )
 
-print("No missing values detected.")
-print("No duplicate records detected.")
-print("All numeric columns are already in the correct data type.")
-print("Text columns standardized by removing extra spaces.")
-print("Dataset is ready for analysis.")
+    print(
+        f"Maximum Expense Ratio : "
+        f"{df['expense_ratio_pct'].max()}"
+    )
 
-# ==========================================================
-# Save Clean Dataset
-# ==========================================================
 
-print("\n" + "=" * 60)
-print("Saving Clean Dataset")
-print("=" * 60)
+def clean_dataset(df):
+    """
+    Clean and standardize dataset values.
 
-output_file = PROCESSED_DATA_PATH / "clean_scheme_performance.csv"
+    Cleaning Steps
+    --------------
+    1. Remove leading and trailing spaces
+       from text columns.
+    2. Standardize categorical values.
 
-performance_df.to_csv(output_file, index=False)
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Raw dataset.
 
-print(f"Dataset successfully saved to:\n{output_file}")
+    Returns
+    -------
+    pandas.DataFrame
+        Cleaned dataset.
+    """
+
+    print("\n" + "=" * 60)
+    print("Data Cleaning Process")
+    print("=" * 60)
+
+    string_columns = [
+        "scheme_name",
+        "fund_house",
+        "category",
+        "plan",
+        "risk_grade"
+    ]
+
+    for column in string_columns:
+        df[column] = df[column].str.strip()
+
+    print("✓ Text columns standardized.")
+    print("✓ Dataset cleaned successfully.")
+
+    return df
+
+
+def print_cleaning_summary():
+    """
+    Display cleaning summary.
+    """
+
+    print("\n" + "=" * 60)
+    print("Data Cleaning Summary")
+    print("=" * 60)
+
+    print("No missing values detected.")
+    print("No duplicate records detected.")
+    print(
+        "All numeric columns are already "
+        "in the correct data type."
+    )
+    print(
+        "Text columns standardized by "
+        "removing extra spaces."
+    )
+    print("Dataset is ready for analysis.")
+
+
+def save_dataset(df):
+    """
+    Save cleaned dataset into processed folder.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Cleaned dataset.
+    """
+
+    print("\n" + "=" * 60)
+    print("Saving Clean Dataset")
+    print("=" * 60)
+
+    output_file = (
+        PROCESSED_DATA_PATH /
+        "clean_scheme_performance.csv"
+    )
+
+    df.to_csv(output_file, index=False)
+
+    print(
+        f"Dataset successfully saved to:\n"
+        f"{output_file}"
+    )
+
+
+def main():
+    """
+    Execute complete cleaning workflow.
+    """
+
+    performance_df = load_dataset()
+
+    inspect_dataset(performance_df)
+
+    assess_data_quality(performance_df)
+
+    performance_df = clean_dataset(performance_df)
+
+    print_cleaning_summary()
+
+    save_dataset(performance_df)
+
+
+if __name__ == "__main__":
+    main()

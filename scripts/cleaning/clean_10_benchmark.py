@@ -1,3 +1,30 @@
+"""
+Bluestock Mutual Fund Capstone
+Day 2 - Data Cleaning
+
+Dataset:
+10_benchmark_indices.csv
+
+Description:
+This script performs exploratory data analysis, data quality
+assessment, validation, and cleaning for the benchmark indices
+dataset. The cleaned dataset is exported into the processed
+data directory for downstream analytics, dashboard development,
+and database loading processes.
+
+Key Activities:
+- Load benchmark index dataset
+- Inspect dataset structure and data types
+- Check missing values and duplicate records
+- Validate benchmark index coverage
+- Convert date fields into datetime format
+- Standardize text fields
+- Validate numeric values
+- Export cleaned dataset
+
+Project: Bluestock Mutual Fund Analytics Capstone
+"""
+
 # ==========================================================
 # Day 2 - Data Cleaning
 # Dataset : 10_benchmark_indices.csv

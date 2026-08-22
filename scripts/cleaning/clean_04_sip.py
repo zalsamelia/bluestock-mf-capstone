@@ -1,7 +1,27 @@
-# ==========================================================
-# Day 2 - Data Cleaning
-# Dataset : 04_monthly_sip_inflows.csv
-# ==========================================================
+"""
+Bluestock Mutual Fund Capstone
+Day 2 - Data Cleaning
+
+Dataset:
+    04_monthly_sip_inflows.csv
+
+Purpose:
+    This script performs exploratory data analysis (EDA),
+    data quality assessment, and data cleaning for the
+    Monthly SIP Inflows dataset.
+
+Main Activities:
+    - Load raw SIP inflow dataset
+    - Inspect dataset structure and statistics
+    - Assess data quality issues
+    - Convert date columns into datetime format
+    - Validate and convert numeric columns
+    - Save cleaned dataset into processed folder
+
+
+Project:
+    Bluestock Mutual Fund Analytics Platform
+"""
 
 import pandas as pd
 from pathlib import Path
@@ -76,8 +96,14 @@ print(f"Maximum SIP Inflow : {sip_df['sip_inflow_crore'].max()}")
 # Data Cleaning
 # ==========================================================
 
+print("\n" + "=" * 60)
+print("Data Cleaning Process")
+print("=" * 60)
+
+# Convert month column to datetime format
 sip_df["month"] = pd.to_datetime(sip_df["month"])
 
+# List of numeric columns that require validation
 numeric_columns = [
     "sip_inflow_crore",
     "active_sip_accounts_crore",
@@ -86,8 +112,20 @@ numeric_columns = [
     "yoy_growth_pct"
 ]
 
+# Convert numeric columns
 for column in numeric_columns:
-    sip_df[column] = pd.to_numeric(sip_df[column], errors="coerce")
+    sip_df[column] = pd.to_numeric(
+        sip_df[column],
+        errors="coerce"
+    )
+
+print("✓ Month converted to datetime.")
+print("✓ Numeric columns validated.")
+print("✓ Dataset cleaned successfully.")
+
+# ==========================================================
+# Data Cleaning Summary
+# ==========================================================
 
 print("\n" + "=" * 60)
 print("Data Cleaning Summary")
@@ -101,8 +139,14 @@ print("Dataset cleaned successfully.")
 # Save Dataset
 # ==========================================================
 
-output_file = PROCESSED_DATA_PATH / "clean_monthly_sip_inflows.csv"
+output_file = (
+    PROCESSED_DATA_PATH /
+    "clean_monthly_sip_inflows.csv"
+)
 
-sip_df.to_csv(output_file, index=False)
+sip_df.to_csv(
+    output_file,
+    index=False
+)
 
 print(f"\nDataset saved to:\n{output_file}")

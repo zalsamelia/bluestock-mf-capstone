@@ -1,11 +1,22 @@
-# ==========================================================
-# Day 2 - Data Cleaning
-# Dataset : 03_aum_by_fund_house.csv
-# ==========================================================
+"""
+Bluestock Mutual Fund Capstone
+Day 2 - Data Cleaning Pipeline
+
+Dataset:
+03_aum_by_fund_house.csv
+
+Purpose:
+This script performs data quality assessment and cleaning for the
+AUM (Assets Under Management) by Fund House dataset. The cleaned
+dataset is saved into the processed data directory for downstream
+analysis and dashboard development.
+
+"""
 
 # ==========================================================
 # Import Libraries
 # ==========================================================
+
 import pandas as pd
 from pathlib import Path
 
@@ -105,8 +116,10 @@ print("\n" + "=" * 60)
 print("Data Cleaning Process")
 print("=" * 60)
 
+# Convert date column to datetime format
 aum_df["date"] = pd.to_datetime(aum_df["date"])
 
+# Standardize fund house names
 aum_df["fund_house"] = aum_df["fund_house"].str.strip()
 
 print("✓ Date converted to datetime.")

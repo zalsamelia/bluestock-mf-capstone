@@ -1,16 +1,76 @@
+"""
+recommender.py
+
+Bluestock Mutual Fund Recommendation Engine.
+
+This module provides a simple rule-based recommendation system
+that suggests mutual funds based on an investor's risk appetite.
+
+The recommendation process uses:
+- Risk category filtering
+- Sharpe Ratio ranking
+- Top-N selection
+
+Risk Appetite Mapping:
+- Low      -> Low Risk Funds
+- Moderate -> Moderate Risk Funds
+- High     -> High Risk Funds
+
+Data Source:
+data/processed/clean_scheme_performance.csv
+
+Project:
+Bluestock Mutual Fund Analytics Platform
+
+"""
+
 from pathlib import Path
 import pandas as pd
 
 
-# Project paths
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DATA_PATH = PROJECT_ROOT / "data" / "processed" / "clean_scheme_performance.csv"
+# ==========================================================
+# Project Paths
+# ==========================================================
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+DATA_PATH = (
+    PROJECT_ROOT
+    / "data"
+    / "processed"
+    / "clean_scheme_performance.csv"
+)
+
+
+# ==========================================================
+# Data Loading
+# ==========================================================
 
 def load_fund_data():
-    """Load fund performance data from the processed CSV file."""
+    """
+    Load and validate mutual fund performance data.
+
+    The function reads the cleaned scheme performance dataset
+    and verifies whether all required columns are available.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Cleaned mutual fund performance dataset.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the CSV file does not exist.
+
+    ValueError
+        If required columns are missing.
+    """
+
     if not DATA_PATH.exists():
-        raise FileNotFoundError(f"Data file not found: {DATA_PATH}")
+        raise FileNotFoundError(
+            f"Data file not found: {DATA_PATH}"
+        )
 
     df = pd.read_csv(DATA_PATH)
 
@@ -22,26 +82,51 @@ def load_fund_data():
     ]
 
     missing_columns = [
-        column for column in required_columns
+        column
+        for column in required_columns
         if column not in df.columns
     ]
 
     if missing_columns:
         raise ValueError(
-            f"Missing required columns: {', '.join(missing_columns)}"
+            f"Missing required columns: "
+            f"{', '.join(missing_columns)}"
         )
 
     return df
 
 
+# ==========================================================
+# Recommendation Engine
+# ==========================================================
+
 def recommend_funds(risk_appetite, top_n=3):
     """
-    Recommend funds based on investor risk appetite.
+    Recommend mutual funds based on investor risk appetite.
 
-    Risk appetite mapping:
-    Low -> Low
-    Moderate -> Moderate
-    High -> High
+    Funds are filtered according to risk category and then
+    ranked by Sharpe Ratio in descending order.
+
+    Parameters
+    ----------
+    risk_appetite : str
+        Investor risk preference.
+        Accepted values:
+        - Low
+        - Moderate
+        - High
+
+    top_n : int, default=3
+        Number of recommendations to return.
+
+    Returns
+    -------
+    pandas.DataFrame or None
+        Top recommended funds sorted by Sharpe Ratio.
+
+    Examples
+    --------
+    >>> recommend_funds("Moderate")
     """
 
     df = load_fund_data()
@@ -68,7 +153,10 @@ def recommend_funds(risk_appetite, top_n=3):
     ].copy()
 
     if recommendations.empty:
-        print(f"No funds found for risk appetite: {risk_appetite}")
+        print(
+            f"No funds found for risk appetite: "
+            f"{risk_appetite}"
+        )
         return None
 
     recommendations["sharpe_ratio"] = pd.to_numeric(
@@ -95,7 +183,18 @@ def recommend_funds(risk_appetite, top_n=3):
     ]
 
 
+# ==========================================================
+# Main Program
+# ==========================================================
+
 def main():
+    """
+    Execute the recommendation workflow.
+
+    Prompts the user for risk appetite and displays
+    the top recommended mutual funds.
+    """
+
     print("Bluestock Mutual Fund Recommender")
     print("---------------------------------")
 
@@ -104,17 +203,34 @@ def main():
     )
 
     try:
-        recommendations = recommend_funds(risk_input)
+
+        recommendations = recommend_funds(
+            risk_input
+        )
 
         if recommendations is not None:
-            print("\nTop 3 Fund Recommendations:")
+
+            print("\nTop Fund Recommendations:")
+
             print(
-                recommendations.to_string(index=False)
+                recommendations.to_string(
+                    index=False
+                )
             )
 
-    except (FileNotFoundError, ValueError) as error:
-        print(f"\nError: {error}")
+    except (
+        FileNotFoundError,
+        ValueError
+    ) as error:
 
+        print(
+            f"\nError: {error}"
+        )
+
+
+# ==========================================================
+# Entry Point
+# ==========================================================
 
 if __name__ == "__main__":
     main()

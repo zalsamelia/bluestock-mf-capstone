@@ -1,10 +1,37 @@
-# ==========================================================
-# Day 2 - Data Cleaning
-# Dataset : 06_industry_folio_count.csv
-# ==========================================================
+"""
+==========================================================
+Bluestock Mutual Fund Capstone
+Day 2 - Data Cleaning
+
+Dataset:
+06_industry_folio_count.csv
+
+Purpose:
+This script performs data profiling, quality assessment,
+cleaning, validation, and export processes for the
+Industry Folio Count dataset.
+
+Main Tasks:
+1. Load raw dataset
+2. Inspect dataset structure
+3. Perform data quality assessment
+4. Convert date column to datetime
+5. Validate numeric columns
+6. Export cleaned dataset
+
+Output:
+clean_industry_folio_count.csv
+
+==========================================================
+"""
 
 import pandas as pd
 from pathlib import Path
+
+
+# ==========================================================
+# Project Paths
+# ==========================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
@@ -13,93 +40,171 @@ PROCESSED_DATA_PATH = PROJECT_ROOT / "data" / "processed"
 
 FOLIO_FILE = RAW_DATA_PATH / "06_industry_folio_count.csv"
 
-folio_df = pd.read_csv(FOLIO_FILE)
 
-print("\n" + "=" * 60)
-print("Industry Folio Count Dataset")
-print("=" * 60)
+def load_dataset():
+    """
+    Load the Industry Folio Count dataset.
 
-print(f"Rows    : {folio_df.shape[0]}")
-print(f"Columns : {folio_df.shape[1]}")
+    Returns
+    -------
+    pandas.DataFrame
+        Raw dataset loaded from CSV file.
+    """
+    return pd.read_csv(FOLIO_FILE)
 
-print("\nColumn Names")
-for column in folio_df.columns:
-    print(f"- {column}")
 
-print("\nData Types")
-print(folio_df.dtypes)
+def inspect_dataset(df):
+    """
+    Display dataset structure and summary statistics.
 
-print("\nFirst Five Rows")
-print(folio_df.head())
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Dataset to inspect.
+    """
 
-print("\nDataset Information")
-folio_df.info()
+    print("\n" + "=" * 60)
+    print("Industry Folio Count Dataset")
+    print("=" * 60)
 
-print("\nStatistical Summary")
-print(folio_df.describe(include="all"))
+    print(f"Rows    : {df.shape[0]}")
+    print(f"Columns : {df.shape[1]}")
 
-# ==========================================================
-# Data Quality Assessment
-# ==========================================================
+    print("\nColumn Names")
+    for column in df.columns:
+        print(f"- {column}")
 
-print("\n" + "=" * 60)
-print("Missing Values")
-print("=" * 60)
-print(folio_df.isnull().sum())
+    print("\nData Types")
+    print(df.dtypes)
 
-print("\n" + "=" * 60)
-print("Duplicate Records")
-print("=" * 60)
-print(f"Duplicate Rows : {folio_df.duplicated().sum()}")
+    print("\nFirst Five Rows")
+    print(df.head())
 
-print("\n" + "=" * 60)
-print("Month Range")
-print("=" * 60)
+    print("\nDataset Information")
+    df.info()
 
-print(f"Earliest Month : {folio_df['month'].min()}")
-print(f"Latest Month   : {folio_df['month'].max()}")
+    print("\nStatistical Summary")
+    print(df.describe(include="all"))
 
-print("\n" + "=" * 60)
-print("Total Folios Validation")
-print("=" * 60)
 
-print(f"Minimum Total Folios : {folio_df['total_folios_crore'].min()}")
-print(f"Maximum Total Folios : {folio_df['total_folios_crore'].max()}")
+def assess_data_quality(df):
+    """
+    Perform data quality assessment.
 
-# ==========================================================
-# Data Cleaning
-# ==========================================================
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Dataset to evaluate.
+    """
 
-folio_df["month"] = pd.to_datetime(folio_df["month"])
+    print("\n" + "=" * 60)
+    print("Missing Values")
+    print("=" * 60)
+    print(df.isnull().sum())
 
-numeric_columns = [
-    "total_folios_crore",
-    "equity_folios_crore",
-    "debt_folios_crore",
-    "hybrid_folios_crore",
-    "others_folios_crore"
-]
+    print("\n" + "=" * 60)
+    print("Duplicate Records")
+    print("=" * 60)
+    print(f"Duplicate Rows : {df.duplicated().sum()}")
 
-for column in numeric_columns:
-    folio_df[column] = pd.to_numeric(
-        folio_df[column],
-        errors="coerce"
+    print("\n" + "=" * 60)
+    print("Month Range")
+    print("=" * 60)
+
+    print(f"Earliest Month : {df['month'].min()}")
+    print(f"Latest Month   : {df['month'].max()}")
+
+    print("\n" + "=" * 60)
+    print("Total Folios Validation")
+    print("=" * 60)
+
+    print(f"Minimum Total Folios : {df['total_folios_crore'].min()}")
+    print(f"Maximum Total Folios : {df['total_folios_crore'].max()}")
+
+
+def clean_dataset(df):
+    """
+    Clean and standardize dataset.
+
+    Cleaning Steps
+    --------------
+    1. Convert month column to datetime
+    2. Validate numeric columns
+    3. Handle invalid values using coercion
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Raw dataset.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Cleaned dataset.
+    """
+
+    df["month"] = pd.to_datetime(df["month"])
+
+    numeric_columns = [
+        "total_folios_crore",
+        "equity_folios_crore",
+        "debt_folios_crore",
+        "hybrid_folios_crore",
+        "others_folios_crore"
+    ]
+
+    for column in numeric_columns:
+        df[column] = pd.to_numeric(
+            df[column],
+            errors="coerce"
+        )
+
+    print("\n" + "=" * 60)
+    print("Data Cleaning Summary")
+    print("=" * 60)
+
+    print("✓ Month converted to datetime.")
+    print("✓ Numeric columns validated.")
+    print("✓ Dataset cleaned successfully.")
+
+    return df
+
+
+def save_dataset(df):
+    """
+    Save cleaned dataset into processed folder.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Cleaned dataset.
+    """
+
+    output_file = (
+        PROCESSED_DATA_PATH /
+        "clean_industry_folio_count.csv"
     )
 
-print("\n" + "=" * 60)
-print("Data Cleaning Summary")
-print("=" * 60)
+    df.to_csv(output_file, index=False)
 
-print("Month converted to datetime.")
-print("Numeric columns validated.")
-print("Dataset cleaned successfully.")
+    print(f"\nDataset saved to:\n{output_file}")
 
-# ==========================================================
-# Save Dataset
-# ==========================================================
 
-output_file = PROCESSED_DATA_PATH / "clean_industry_folio_count.csv"
+def main():
+    """
+    Execute complete ETL cleaning workflow.
+    """
 
-folio_df.to_csv(output_file, index=False)
+    folio_df = load_dataset()
 
-print(f"\nDataset saved to:\n{output_file}")
+    inspect_dataset(folio_df)
+
+    assess_data_quality(folio_df)
+
+    folio_df = clean_dataset(folio_df)
+
+    save_dataset(folio_df)
+
+
+if __name__ == "__main__":
+    main()

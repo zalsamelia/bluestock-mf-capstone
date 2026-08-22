@@ -1,7 +1,19 @@
-# ==========================================================
-# Day 2 - Data Cleaning
-# Dataset : 09_portfolio_holdings.csv
-# ==========================================================
+"""
+Bluestock Mutual Fund Capstone
+Day 2 - Data Cleaning
+
+Dataset:
+09_portfolio_holdings.csv
+
+Description:
+This script performs data profiling, quality assessment,
+cleaning, validation, and preprocessing for the portfolio
+holdings dataset. The cleaned dataset is exported into the
+processed data directory for downstream analytics and
+database loading processes.
+
+Project: Bluestock Mutual Fund Analytics Capstone
+"""
 
 import pandas as pd
 from pathlib import Path

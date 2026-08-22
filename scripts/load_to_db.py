@@ -1,6 +1,22 @@
-# ==========================================================
-# Day 2 - Load Clean Data into SQLite Database
-# ==========================================================
+"""
+Load Clean Data into SQLite Database
+
+This script creates the SQLite database schema and loads all
+cleaned datasets into the dimensional and fact tables.
+
+Process:
+1. Create database schema from schema.sql
+2. Remove existing records
+3. Load cleaned CSV datasets
+4. Create date dimension table
+5. Load dimension tables
+6. Load fact tables
+7. Verify loaded records
+8. Display loading summary
+
+Outputs:
+- bluestock_mf.db
+"""
 
 # ==========================================================
 # Import Libraries
@@ -9,6 +25,7 @@
 import sqlite3
 import pandas as pd
 from pathlib import Path
+
 
 # ==========================================================
 # Project Paths
@@ -22,200 +39,575 @@ SQL_PATH = PROJECT_ROOT / "sql"
 
 DATABASE_PATH = PROJECT_ROOT / "bluestock_mf.db"
 
-# ==========================================================
-# Connect to SQLite Database
-# ==========================================================
-
-connection = sqlite3.connect(DATABASE_PATH)
-
-cursor = connection.cursor()
 
 # ==========================================================
-# Create Database Schema
+# Helper Functions
 # ==========================================================
 
-schema_file = SQL_PATH / "schema.sql"
+def get_table_columns(connection, table_name):
+    """
+    Return the existing columns of a SQLite table.
+    """
 
-with open(schema_file, "r", encoding="utf-8") as file:
-    schema_sql = file.read()
+    query = f"PRAGMA table_info({table_name})"
 
-cursor.executescript(schema_sql)
+    columns = pd.read_sql_query(
+        query,
+        connection
+    )
 
-connection.commit()
+    return columns["name"].tolist()
 
-print("Database schema created successfully.")
 
-# ==========================================================
-# Remove Existing Records
-# ==========================================================
+def infer_sqlite_type(series):
+    """
+    Infer a suitable SQLite data type from a pandas Series.
+    """
 
-print("\nRemoving existing records...")
+    if pd.api.types.is_integer_dtype(series):
+        return "INTEGER"
 
-cursor.execute("DELETE FROM dim_fund")
-cursor.execute("DELETE FROM dim_date")
-cursor.execute("DELETE FROM fact_nav")
-cursor.execute("DELETE FROM fact_transactions")
-cursor.execute("DELETE FROM fact_performance")
+    if pd.api.types.is_float_dtype(series):
+        return "REAL"
 
-connection.commit()
+    if pd.api.types.is_datetime64_any_dtype(series):
+        return "TEXT"
 
-print("Done.")
+    return "TEXT"
 
-# ==========================================================
-# Load Clean CSV Files
-# ==========================================================
 
-print("\nReading cleaned datasets...")
+def ensure_table_columns(connection, table_name, dataframe):
+    """
+    Ensure that all columns from the dataframe exist
+    in the corresponding SQLite table.
 
-fund_df = pd.read_csv(
-    PROCESSED_DATA_PATH / "clean_fund_master.csv"
-)
+    Missing columns are automatically added to the table.
+    """
 
-nav_df = pd.read_csv(
-    PROCESSED_DATA_PATH / "clean_nav_history.csv"
-)
+    existing_columns = get_table_columns(
+        connection,
+        table_name
+    )
 
-transaction_df = pd.read_csv(
-    PROCESSED_DATA_PATH / "clean_investor_transactions.csv"
-)
+    dataframe_columns = dataframe.columns.tolist()
 
-performance_df = pd.read_csv(
-    PROCESSED_DATA_PATH / "clean_scheme_performance.csv"
-)
-
-print("Done.")
-
-# ==========================================================
-# Create Date Dimension
-# ==========================================================
-
-print("\nCreating date dimension...")
-
-all_dates = pd.concat(
-    [
-        pd.to_datetime(nav_df["date"]),
-        pd.to_datetime(transaction_df["transaction_date"]),
-        pd.to_datetime(fund_df["launch_date"])
+    missing_columns = [
+        column
+        for column in dataframe_columns
+        if column not in existing_columns
     ]
-)
 
-all_dates = all_dates.drop_duplicates()
+    if not missing_columns:
+        return
 
-all_dates = all_dates.sort_values()
+    print(
+        f"\nAdditional columns detected in {table_name}:"
+    )
 
-dim_date = pd.DataFrame()
+    for column in missing_columns:
 
-dim_date["date"] = all_dates
+        sql_type = infer_sqlite_type(
+            dataframe[column]
+        )
 
-dim_date["year"] = dim_date["date"].dt.year
+        print(
+            f"Adding column: {column} ({sql_type})"
+        )
 
-dim_date["quarter"] = dim_date["date"].dt.quarter
+        alter_sql = f"""
+        ALTER TABLE {table_name}
+        ADD COLUMN "{column}" {sql_type}
+        """
 
-dim_date["month"] = dim_date["date"].dt.month
+        connection.execute(alter_sql)
 
-dim_date["month_name"] = dim_date["date"].dt.month_name()
+    connection.commit()
 
-dim_date["day"] = dim_date["date"].dt.day
+    print(
+        f"✓ Missing columns added to {table_name}."
+    )
 
-dim_date["day_name"] = dim_date["date"].dt.day_name()
 
-print("Done.")
+def clear_table(connection, table_name):
+    """
+    Remove existing records from a SQLite table.
+    """
 
-# ==========================================================
-# Load Dimension Tables
-# ==========================================================
+    connection.execute(
+        f"DELETE FROM {table_name}"
+    )
 
-print("\nLoading dim_fund...")
-
-fund_df.to_sql(
-    "dim_fund",
-    connection,
-    if_exists="append",
-    index=False
-)
-
-print("Done.")
-
-print("\nLoading dim_date...")
-
-dim_date.to_sql(
-    "dim_date",
-    connection,
-    if_exists="append",
-    index=False
-)
-
-print("Done.")
 
 # ==========================================================
-# Load Fact Tables
+# Main Pipeline
 # ==========================================================
 
-print("\nLoading fact_nav...")
+def main():
+    """
+    Create SQLite database and load all cleaned datasets.
+    """
 
-nav_df.to_sql(
-    "fact_nav",
-    connection,
-    if_exists="append",
-    index=False
-)
+    print("\n" + "=" * 60)
+    print("BLUESTOCK MUTUAL FUND DATABASE LOADER")
+    print("=" * 60)
 
-print("Done.")
 
-print("\nLoading fact_transactions...")
+    # ======================================================
+    # Connect to SQLite
+    # ======================================================
 
-transaction_df.to_sql(
-    "fact_transactions",
-    connection,
-    if_exists="append",
-    index=False
-)
+    print("\nConnecting to SQLite database...")
 
-print("Done.")
+    connection = sqlite3.connect(
+        DATABASE_PATH
+    )
 
-print("\nLoading fact_performance...")
+    print("✓ Database connection established.")
 
-performance_df.to_sql(
-    "fact_performance",
-    connection,
-    if_exists="append",
-    index=False
-)
 
-print("Done.")
+    try:
 
-connection.commit()
+        # ==================================================
+        # Create Database Schema
+        # ==================================================
+
+        print("\nCreating database schema...")
+
+        schema_file = SQL_PATH / "schema.sql"
+
+        with open(
+            schema_file,
+            "r",
+            encoding="utf-8"
+        ) as file:
+
+            schema_sql = file.read()
+
+        connection.executescript(
+            schema_sql
+        )
+
+        connection.commit()
+
+        print(
+            "✓ Database schema created successfully."
+        )
+
+
+        # ==================================================
+        # Load Cleaned CSV Files
+        # ==================================================
+
+        print("\nReading cleaned datasets...")
+
+        fund_df = pd.read_csv(
+            PROCESSED_DATA_PATH /
+            "clean_fund_master.csv"
+        )
+
+        nav_df = pd.read_csv(
+            PROCESSED_DATA_PATH /
+            "clean_nav_history.csv"
+        )
+
+        transaction_df = pd.read_csv(
+            PROCESSED_DATA_PATH /
+            "clean_investor_transactions.csv"
+        )
+
+        performance_df = pd.read_csv(
+            PROCESSED_DATA_PATH /
+            "clean_scheme_performance.csv"
+        )
+
+        print("✓ Cleaned datasets loaded.")
+
+
+        # ==================================================
+        # Display Performance Columns
+        # ==================================================
+
+        print(
+            "\nPerformance dataset columns:"
+        )
+
+        for column in performance_df.columns:
+
+            print(
+                f"  - {column}"
+            )
+
+
+        # ==================================================
+        # Create Date Dimension
+        # ==================================================
+
+        print(
+            "\nCreating date dimension..."
+        )
+
+        nav_dates = pd.to_datetime(
+            nav_df["date"],
+            errors="coerce"
+        )
+
+        transaction_dates = pd.to_datetime(
+            transaction_df["transaction_date"],
+            errors="coerce"
+        )
+
+        fund_dates = pd.to_datetime(
+            fund_df["launch_date"],
+            errors="coerce"
+        )
+
+        all_dates = pd.concat(
+            [
+                nav_dates,
+                transaction_dates,
+                fund_dates
+            ],
+            ignore_index=True
+        )
+
+        all_dates = (
+            all_dates
+            .dropna()
+            .drop_duplicates()
+            .sort_values()
+        )
+
+        dim_date = pd.DataFrame()
+
+        dim_date["date"] = all_dates
+
+        dim_date["year"] = (
+            dim_date["date"].dt.year
+        )
+
+        dim_date["quarter"] = (
+            dim_date["date"].dt.quarter
+        )
+
+        dim_date["month"] = (
+            dim_date["date"].dt.month
+        )
+
+        dim_date["month_name"] = (
+            dim_date["date"].dt.month_name()
+        )
+
+        dim_date["day"] = (
+            dim_date["date"].dt.day
+        )
+
+        dim_date["day_name"] = (
+            dim_date["date"].dt.day_name()
+        )
+
+        # SQLite will store dates as TEXT
+        dim_date["date"] = (
+            dim_date["date"]
+            .dt.strftime("%Y-%m-%d")
+        )
+
+        print(
+            f"✓ Date dimension created: "
+            f"{len(dim_date)} records"
+        )
+
+
+        # ==================================================
+        # Prepare Table Structures
+        # ==================================================
+
+        print(
+            "\nChecking SQLite table structures..."
+        )
+
+        ensure_table_columns(
+            connection,
+            "dim_fund",
+            fund_df
+        )
+
+        ensure_table_columns(
+            connection,
+            "dim_date",
+            dim_date
+        )
+
+        ensure_table_columns(
+            connection,
+            "fact_nav",
+            nav_df
+        )
+
+        ensure_table_columns(
+            connection,
+            "fact_transactions",
+            transaction_df
+        )
+
+        ensure_table_columns(
+            connection,
+            "fact_performance",
+            performance_df
+        )
+
+        print(
+            "\n✓ Table structures verified."
+        )
+
+
+        # ==================================================
+        # Remove Existing Records
+        # ==================================================
+
+        print(
+            "\nRemoving existing records..."
+        )
+
+        tables_to_clear = [
+            "fact_performance",
+            "fact_transactions",
+            "fact_nav",
+            "dim_date",
+            "dim_fund"
+        ]
+
+        for table in tables_to_clear:
+
+            clear_table(
+                connection,
+                table
+            )
+
+        connection.commit()
+
+        print(
+            "✓ Existing records removed."
+        )
+
+
+        # ==================================================
+        # Load dim_fund
+        # ==================================================
+
+        print(
+            "\nLoading dim_fund..."
+        )
+
+        fund_df.to_sql(
+            "dim_fund",
+            connection,
+            if_exists="append",
+            index=False
+        )
+
+        print(
+            f"✓ dim_fund loaded: "
+            f"{len(fund_df)} records"
+        )
+
+
+        # ==================================================
+        # Load dim_date
+        # ==================================================
+
+        print(
+            "\nLoading dim_date..."
+        )
+
+        dim_date.to_sql(
+            "dim_date",
+            connection,
+            if_exists="append",
+            index=False
+        )
+
+        print(
+            f"✓ dim_date loaded: "
+            f"{len(dim_date)} records"
+        )
+
+
+        # ==================================================
+        # Load fact_nav
+        # ==================================================
+
+        print(
+            "\nLoading fact_nav..."
+        )
+
+        nav_df.to_sql(
+            "fact_nav",
+            connection,
+            if_exists="append",
+            index=False
+        )
+
+        print(
+            f"✓ fact_nav loaded: "
+            f"{len(nav_df)} records"
+        )
+
+
+        # ==================================================
+        # Load fact_transactions
+        # ==================================================
+
+        print(
+            "\nLoading fact_transactions..."
+        )
+
+        transaction_df.to_sql(
+            "fact_transactions",
+            connection,
+            if_exists="append",
+            index=False
+        )
+
+        print(
+            f"✓ fact_transactions loaded: "
+            f"{len(transaction_df)} records"
+        )
+
+
+        # ==================================================
+        # Load fact_performance
+        # ==================================================
+
+        print(
+            "\nLoading fact_performance..."
+        )
+
+        performance_df.to_sql(
+            "fact_performance",
+            connection,
+            if_exists="append",
+            index=False
+        )
+
+        print(
+            f"✓ fact_performance loaded: "
+            f"{len(performance_df)} records"
+        )
+
+
+        # ==================================================
+        # Commit Changes
+        # ==================================================
+
+        connection.commit()
+
+
+        # ==================================================
+        # Verify Database
+        # ==================================================
+
+        print(
+            "\n" + "=" * 60
+        )
+
+        print(
+            "DATABASE LOADING SUMMARY"
+        )
+
+        print(
+            "=" * 60
+        )
+
+        tables = [
+            "dim_fund",
+            "dim_date",
+            "fact_nav",
+            "fact_transactions",
+            "fact_performance"
+        ]
+
+        for table in tables:
+
+            result = connection.execute(
+                f"SELECT COUNT(*) FROM {table}"
+            ).fetchone()
+
+            count = result[0]
+
+            print(
+                f"{table:<25}: {count:,} records"
+            )
+
+
+        # ==================================================
+        # Verify Performance Table Columns
+        # ==================================================
+
+        print(
+            "\nChecking fact_performance columns..."
+        )
+
+        performance_columns = get_table_columns(
+            connection,
+            "fact_performance"
+        )
+
+        print(
+            "\nColumns:"
+        )
+
+        for column in performance_columns:
+
+            print(
+                f"  ✓ {column}"
+            )
+
+
+        # ==================================================
+        # Final Message
+        # ==================================================
+
+        print(
+            "\n" + "=" * 60
+        )
+
+        print(
+            "DATABASE CREATED SUCCESSFULLY"
+        )
+
+        print(
+            "=" * 60
+        )
+
+        print(
+            f"\nDatabase Location:"
+        )
+
+        print(
+            DATABASE_PATH
+        )
+
+        print(
+            "\nAll cleaned datasets have been loaded "
+            "into SQLite successfully."
+        )
+
+    finally:
+
+        # ==================================================
+        # Close Connection
+        # ==================================================
+
+        connection.close()
+
+        print(
+            "\nDatabase connection closed."
+        )
+
 
 # ==========================================================
-# Summary
+# Script Entry Point
 # ==========================================================
 
-print("\n" + "=" * 60)
-print("Database Successfully Created")
-print("=" * 60)
-
-print(f"Database Location : {DATABASE_PATH}")
-
-print("\nLoaded Tables")
-print("- dim_fund")
-print("- dim_date")
-print("- fact_nav")
-print("- fact_transactions")
-print("- fact_performance")
-
-print("\nTotal Records Loaded")
-print(f"dim_fund             : {len(fund_df)}")
-print(f"dim_date             : {len(dim_date)}")
-print(f"fact_nav             : {len(nav_df)}")
-print(f"fact_transactions    : {len(transaction_df)}")
-print(f"fact_performance     : {len(performance_df)}")
-
-print("\nAll datasets successfully loaded into SQLite.")
-
-# ==========================================================
-# Close Database Connection
-# ==========================================================
-
-connection.close()
-
-print("Database connection closed.")
+if __name__ == "__main__":
+    main()

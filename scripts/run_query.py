@@ -1,11 +1,43 @@
+"""
+load_query.py
+
+Bluestock Mutual Fund Analytics
+Interactive SQL Query Runner
+
+This script provides an interactive command-line interface
+for executing predefined SQL queries against the Bluestock
+Mutual Fund SQLite database.
+
+The objective of this tool is to allow users, analysts,
+and project reviewers to explore key business insights
+without manually writing SQL statements.
+
+Available analyses include:
+- Top funds by AUM
+- Lowest expense ratio funds
+- Highest Sharpe ratio funds
+- Average returns by category
+- Transaction analysis
+- Investor segmentation
+- NAV analysis
+- Benchmark outperformance analysis
+
+Database:
+bluestock_mf.db
+
+Project:
+Bluestock Mutual Fund Analytics Platform
+
+"""
+
 # ==========================================================
-# Bluestock Mutual Fund Capstone
-# Interactive SQL Query Runner
+# Import Libraries
 # ==========================================================
 
 import sqlite3
 import pandas as pd
 from pathlib import Path
+
 
 # ==========================================================
 # Project Paths
@@ -15,14 +47,16 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 DATABASE_PATH = PROJECT_ROOT / "bluestock_mf.db"
 
+
 # ==========================================================
-# Connect Database
+# Database Connection
 # ==========================================================
 
 connection = sqlite3.connect(DATABASE_PATH)
 
+
 # ==========================================================
-# SQL Queries
+# Predefined SQL Queries
 # ==========================================================
 
 queries = {
@@ -146,7 +180,10 @@ queries = {
                 scheme_name,
                 return_3yr_pct,
                 benchmark_3yr_pct,
-                ROUND(return_3yr_pct - benchmark_3yr_pct,2) AS excess_return
+                ROUND(
+                    return_3yr_pct - benchmark_3yr_pct,
+                    2
+                ) AS excess_return
             FROM fact_performance
             ORDER BY excess_return DESC;
         """
@@ -154,11 +191,19 @@ queries = {
 
 }
 
+
 # ==========================================================
-# Main Program
+# Helper Functions
 # ==========================================================
 
-while True:
+def display_menu():
+    """
+    Display available SQL queries.
+
+    Returns
+    -------
+    None
+    """
 
     print("\n")
     print("=" * 45)
@@ -171,20 +216,20 @@ while True:
 
     print("0. Exit")
 
-    try:
-        choice = int(input("\nSelect a query (0-10): "))
 
-    except ValueError:
-        print("\nPlease enter a valid number.")
-        continue
+def execute_query(choice):
+    """
+    Execute selected SQL query and display results.
 
-    if choice == 0:
-        print("\nProgram closed successfully.")
-        break
+    Parameters
+    ----------
+    choice : int
+        Query number selected by the user.
 
-    if choice not in queries:
-        print("\nInvalid selection.")
-        continue
+    Returns
+    -------
+    None
+    """
 
     print("\n")
     print("=" * 45)
@@ -198,12 +243,67 @@ while True:
 
     print(result)
 
-    input("\nPress Enter to continue...")
 
 # ==========================================================
-# Close Connection
+# Main Program
 # ==========================================================
 
-connection.close()
+def main():
+    """
+    Run the interactive query runner.
 
-print("\nDatabase connection closed.")
+    Users can select predefined analytical
+    queries and view results directly from
+    the SQLite database.
+    """
+
+    while True:
+
+        display_menu()
+
+        try:
+            choice = int(
+                input("\nSelect a query (0-10): ")
+            )
+
+        except ValueError:
+            print(
+                "\nPlease enter a valid number."
+            )
+            continue
+
+        if choice == 0:
+            print(
+                "\nProgram closed successfully."
+            )
+            break
+
+        if choice not in queries:
+            print(
+                "\nInvalid selection."
+            )
+            continue
+
+        execute_query(choice)
+
+        input(
+            "\nPress Enter to continue..."
+        )
+
+
+# ==========================================================
+# Entry Point
+# ==========================================================
+
+if __name__ == "__main__":
+
+    try:
+        main()
+
+    finally:
+
+        connection.close()
+
+        print(
+            "\nDatabase connection closed."
+        )
